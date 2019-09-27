@@ -1,0 +1,5 @@
+#!/bin/bash
+
+DIR=${1?Error: no extension dir given}
+
+phpstan analyse --autoload-file=$DIR/../../autoload.php $DIR

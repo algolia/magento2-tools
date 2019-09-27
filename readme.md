@@ -8,16 +8,14 @@
 
 ## 💡 Getting Started
 
-First, install `magento2-tools` on your projects folder:
+First, install `magento2-tools`:
 ```bash
-cd `DIR_WITH_MAGENTO_APPLICATIONS`
-git clone https://github.com/algolia/magento2-tools
-cd magento2-tools && composer install
+composer global algolia/magento2-tools
 ```
 
 Finally, you may begin analysing the code quality with:
 ```bash
-MAGENTO_DIR=magento232 composer test
+magento2-test path/to/magento/extension
 ```
 
 ## 📄 License
