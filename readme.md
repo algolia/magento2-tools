@@ -8,22 +8,16 @@
 
 ## 💡 Getting Started
 
-First, move your current directory to the `YOUR_MAGENTO2_INSTALLATION_PATH`:
-
+First, install `magento2-tools` on your projects folder:
 ```bash
-cd <YOUR_MAGENTO2_INSTALLATION_PATH>
-```
-
-Then, install `magento2-tools` locally:
-
-```bash
+cd `DIR_WITH_MAGENTO_APPLICATIONS`
 git clone https://github.com/algolia/magento2-tools
 cd magento2-tools && composer install
 ```
 
 Finally, you may begin analysing the code quality with:
 ```bash
-composer test
+MAGENTO_DIR=magento232 composer test
 ```
 
 ## 📄 License

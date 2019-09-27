@@ -32,14 +32,14 @@
             "Algolia\\AlgoliaSearch\\": "../"
         },
         "files": [
-            "../algoliasearch-magento-2/registration.php",
-            "../vendor/autoload.php"
+            "../$MAGENTO_DIR/vendor/algoliasearch-magento-2/registration.php",
+            "../$MAGENTO_DIR/vendor/autoload.php"
         ]
     },
     "scripts": {
-        "lint": "php-cs-fixer fix --config=.php_cs --allow-risky=yes ../ ",
+        "lint": "php-cs-fixer fix --config=.php_cs --allow-risky=yes ../$MAGENTO_DIR/vendor/algoliasearch-magento-2",
         "test:lint": "@lint --dry-run",
-        "test:types": "phpstan analyse --configuration='phpstan.neon' ../ ",
+        "test:types": "phpstan analyse --configuration='phpstan.neon' ../$MAGENTO_DIR/vendor/algoliasearch-magento-2",
         "test": [
           "@test:lint",
           "@test:types"
