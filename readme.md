@@ -3,20 +3,26 @@
     <img alt="" src="https://raw.githubusercontent.com/algolia/algoliasearch-client-common/master/readme-banner.png" >
   </a>
 
-  <h4 align="center">The perfect starting point to analyse the PHP quality of Algolia Magento 2 extension</h4>
+  <h4 align="center">The perfect starting point to analyse the PHP quality of our Algolia Magento 2 extension</h4>
 </p>
 
 ## 💡 Getting Started
 
-First, install `magento2-tools`:
+First, install globally the `magento2-tools`:
 ```bash
 composer global require algolia/magento2-tools
 ```
 
-Finally, you may begin analysing the code quality with:
+Finally, you can launch the quality tools with:
 ```bash
-magento2-test path/to/magento/extension
+{command} path/to/magento/extension
 ```
+
+Here is the list of available commands:
+
+- `magento2-lint`: Runs the linter and fixes the found issues
+- `magento2-types`: Runs the type checker and displays the found issues
+- `magento2-test`: Runs both previous commands in `--dry-run` mode
 
 ## 📄 License
 
