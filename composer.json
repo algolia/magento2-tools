@@ -13,8 +13,7 @@
     "prefer-stable": true,
     "require": {
         "friendsofphp/php-cs-fixer": "^2.15",
-        "phpstan/phpstan": "^0.11.16",
-        "phpunit/phpunit": "^5.0"
+        "phpstan/phpstan": "^0.11.16"
     },
     "repositories": [
         {
@@ -29,6 +28,6 @@
     "bin": [
         "bin/magento2-lint",
         "bin/magento2-test",
-        "bin/magento2-types",
+        "bin/magento2-types"
     ]
 }
