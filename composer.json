@@ -12,7 +12,13 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "phpstan/phpstan": "^0.11.16"
+        "algolia/algoliasearch-client-php": ">=1.27.0 <2.0",
+        "friendsofphp/php-cs-fixer": "^2.15",
+        "magento-ecg/coding-standard": "^3.1",
+        "magento/community-edition": "^2.3",
+        "phpstan/phpstan": "^0.11.16",
+        "phpunit/phpunit": "^5.0",
+        "squizlabs/php_codesniffer": "^3.5"
     },
     "repositories": [
         {
@@ -29,17 +35,18 @@
     },
     "autoload": {
         "psr-4": {
-            "Algolia\\AlgoliaSearch\\": "../"
+            "Algolia\\AlgoliaSearch\\": "../algoliasearch-magento-2",
+            "Magento\\": "./vendor/magento/community-edition/app/code/Magento",
+            "Magento\\TestFramework\\": "./vendor/magento/community-edition/dev/tests/integration/framework/Magento/TestFramework"
         },
         "files": [
-            "../$MAGENTO_DIR/vendor/algoliasearch-magento-2/registration.php",
-            "../$MAGENTO_DIR/vendor/autoload.php"
+            "../algoliasearch-magento-2/registration.php"
         ]
     },
     "scripts": {
-        "lint": "php-cs-fixer fix --config=.php_cs --allow-risky=yes ../$MAGENTO_DIR/vendor/algoliasearch-magento-2",
+        "lint": "php-cs-fixer fix --config=.php_cs ../algoliasearch-magento-2/ --allow-risky=yes",
         "test:lint": "@lint --dry-run",
-        "test:types": "phpstan analyse --configuration='phpstan.neon' ../$MAGENTO_DIR/vendor/algoliasearch-magento-2",
+        "test:types": "phpstan analyse --configuration='phpstan.neon' ../algoliasearch-magento-2/",
         "test": [
           "@test:lint",
           "@test:types"
