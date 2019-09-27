@@ -10,7 +10,7 @@
 
 First, install `magento2-tools`:
 ```bash
-composer global algolia/magento2-tools
+composer global require algolia/magento2-tools
 ```
 
 Finally, you may begin analysing the code quality with:
