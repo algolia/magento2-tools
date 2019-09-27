@@ -1,0 +1,48 @@
+{
+    "name": "algolia/magento2-tools",
+    "description": "Tools for magento 2 developers",
+    "keywords": ["php", "magento", "tools"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Algolia Team",
+            "email": "contact@algolia.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "phpstan/phpstan": "^0.11.16"
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://repo.packagist.org"
+        }
+    ],
+    "config": {
+        "sort-packages": true,
+        "preferred-install": "dist",
+        "platform": {
+            "php": "7.2.0"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Algolia\\AlgoliaSearch\\": "../"
+        },
+        "files": [
+            "../algoliasearch-magento-2/registration.php",
+            "../vendor/autoload.php"
+        ]
+    },
+    "scripts": {
+        "lint": "php-cs-fixer fix --config=.php_cs --allow-risky=yes ../ ",
+        "test:lint": "@lint --dry-run",
+        "test:types": "phpstan analyse --configuration='phpstan.neon' ../ ",
+        "test": [
+          "@test:lint",
+          "@test:types"
+        ]
+    }
+}
