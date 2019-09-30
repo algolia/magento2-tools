@@ -23,9 +23,11 @@ Finally, you can launch the quality tools with:
 
 Here is the list of available commands:
 
-- `magento2-lint`: Runs the linter and fixes the found issues
-- `magento2-types`: Runs the type checker and displays the found issues
-- `magento2-test`: Runs both previous commands in `--dry-run` mode
+- **`magento2-lint`**: Runs the linter and fixes the found issues - configuration file under `algoliasearch-magento-2/.php_cs`.
+
+- **`magento2-types`**: Runs the type checker and displays the found issues - configuration file under `algoliasearch-magento-2/phpstan.neon`.
+
+- **`magento2-test`**: Runs both previous commands in `--dry-run` mode.
 
 ## 📄 License
 
