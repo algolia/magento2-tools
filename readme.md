@@ -13,6 +13,9 @@ First, install globally the `magento2-tools`:
 composer global require algolia/magento2-tools
 ```
 
+Make sure to place Composer's system-wide vendor bin directory in your `$PATH`
+so the `magento2-tool` executable can be located by your system.
+
 Finally, you can launch the quality tools with:
 ```bash
 {command} path/to/magento/extension
