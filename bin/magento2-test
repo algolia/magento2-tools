@@ -3,4 +3,4 @@
 DIR=${1?Error: no extension dir given}
 
 php-cs-fixer fix --allow-risky=yes $DIR --dry-run
-phpstan analyse --autoload-file=$DIR/../../autoload.php
+phpstan analyse --autoload-file=$DIR/../../autoload.php $DIR
