@@ -9,15 +9,15 @@ THIS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
-printf "Analysing ${GREEN}Coding Style${NC} \n"
+printf "\n1. Analysing ${GREEN}Coding Style${NC} \n\n"
 
 php-cs-fixer fix --allow-risky=yes $EXTENSION_PATH --dry-run
 
-printf "Analysing ${GREEN}PHP Compatibility${NC} \n"
+printf "\n2. Analysing ${GREEN}PHP Compatibility${NC} \n\n"
 
 phpcs --config-set installed_paths $THIS/../vendor/phpcompatibility/php-compatibility
 phpcs -p --standard=PHPCompatibility --runtime-set testVersion 7.1- --runtime-set ignore_warnings_on_exit true --ignore=vendor/*,*/view $EXTENSION_PATH
 
-printf "Analysing ${GREEN}Type Checking${NC} \n"
+printf "\n3. Analysing ${GREEN}Type Checking${NC} \n\n"
 
 cd $MAGENTO_PATH && phpstan analyse -c $EXTENSION_PATH/phpstan.neon

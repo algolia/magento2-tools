@@ -27,7 +27,9 @@ Here is the list of available commands:
 
 - **`magento2-types`**: Runs the type checker and displays the found issues - configuration file under `algoliasearch-magento-2/phpstan.neon`.
 
-- **`magento2-test`**: Runs both previous commands in `--dry-run` mode.
+- **`magento2-php-compatibility`**: Checks if your code is compatibility between multiple all php versions supported by magento.
+
+- **`magento2-test`**: Runs all previous commands in `--dry-run` mode.
 
 ## 📄 License
 
