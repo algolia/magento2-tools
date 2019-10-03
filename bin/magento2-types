@@ -2,4 +2,6 @@
 
 DIR=${1?Error: no extension dir given}
 
-phpstan analyse --autoload-file=$DIR/../../autoload.php $DIR
+VENDOR_PATH=$(cd $DIR/../.. && pwd)
+
+phpstan analyse --autoload-file=$VENDOR_PATH/autoload.php $DIR
