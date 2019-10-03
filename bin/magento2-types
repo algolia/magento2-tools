@@ -2,6 +2,7 @@
 
 DIR=${1?Error: no extension dir given}
 
-VENDOR_PATH=$(cd $DIR/../.. && pwd)
+MAGENTO_PATH=$(cd $DIR/../../.. && pwd)
+EXTENSION_PATH=$MAGENTO_PATH/vendor/algolia/algoliasearch-magento-2
 
-phpstan analyse --autoload-file=$VENDOR_PATH/autoload.php $DIR
+cd $MAGENTO_PATH && phpstan analyse -c $EXTENSION_PATH/phpstan.neon
