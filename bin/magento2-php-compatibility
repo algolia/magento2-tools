@@ -8,5 +8,12 @@ MAGENTO_PATH=$(cd $DIR/../../.. && pwd)
 EXTENSION_PATH=$MAGENTO_PATH/vendor/algolia/algoliasearch-magento-2
 THIS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-phpcs --config-set installed_paths $THIS/../vendor/phpcompatibility/php-compatibility
+PHP_COMPATIBILITY_PATH=$THIS/../vendor/phpcompatibility/php-compatibility
+
+if [ ! -d "$PHP_COMPATIBILITY_PATH" ]; then
+  PHP_COMPATIBILITY_PATH=$THIS/../phpcompatibility/php-compatibility
+fi
+
+phpcs --config-set installed_paths $PHP_COMPATIBILITY_PATH
+
 phpcs -p --standard=PHPCompatibility --runtime-set testVersion 7.1- --runtime-set ignore_warnings_on_exit true --ignore=vendor/*,*/view $EXTENSION_PATH
