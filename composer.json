@@ -31,6 +31,6 @@
         "bin/magento2-lint",
         "bin/magento2-test",
         "bin/magento2-types",
-        "bin/magento2-php-validator"
+        "bin/magento2-php-compatibility"
     ]
 }
