@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 DIR=${1?Error: no extension dir given}
 
 MAGENTO_PATH=$(cd $DIR/../../.. && pwd)
@@ -16,6 +18,7 @@ php-cs-fixer fix --allow-risky=yes $EXTENSION_PATH --dry-run
 printf "\n2. Analysing ${GREEN}PHP Compatibility${NC} \n\n"
 
 phpcs --config-set installed_paths $THIS/../vendor/phpcompatibility/php-compatibility
+
 phpcs -p --standard=PHPCompatibility --runtime-set testVersion 7.1- --runtime-set ignore_warnings_on_exit true --ignore=vendor/*,*/view $EXTENSION_PATH
 
 printf "\n3. Analysing ${GREEN}Type Checking${NC} \n\n"

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 DIR=${1?Error: no extension dir given}
 
 MAGENTO_PATH=$(cd $DIR/../../.. && pwd)
