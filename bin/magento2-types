@@ -3,8 +3,9 @@
 set -e
 
 DIR=${1?Error: no extension dir given}
+VENDOR_BIN=${2}
 
 MAGENTO_PATH=$(cd $DIR/../../.. && pwd)
 EXTENSION_PATH=$MAGENTO_PATH/vendor/algolia/algoliasearch-magento-2
 
-cd $MAGENTO_PATH && phpstan analyse -c $EXTENSION_PATH/phpstan.neon
+cd $MAGENTO_PATH && ${VENDOR_BIN}phpstan analyse --memory-limit=4000M -c $EXTENSION_PATH/phpstan.neon

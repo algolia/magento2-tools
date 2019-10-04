@@ -3,6 +3,7 @@
 set -e
 
 DIR=${1?Error: no extension dir given}
+VENDOR_BIN=${2}
 
 MAGENTO_PATH=$(cd $DIR/../../.. && pwd)
 EXTENSION_PATH=$MAGENTO_PATH/vendor/algolia/algoliasearch-magento-2
@@ -14,6 +15,6 @@ if [ ! -d "$PHP_COMPATIBILITY_PATH" ]; then
   PHP_COMPATIBILITY_PATH=$THIS/../phpcompatibility/php-compatibility
 fi
 
-phpcs --config-set installed_paths $PHP_COMPATIBILITY_PATH
+${VENDOR_BIN}phpcs --config-set installed_paths $PHP_COMPATIBILITY_PATH
 
-phpcs -p --standard=PHPCompatibility --runtime-set testVersion 7.1- --runtime-set ignore_warnings_on_exit true --ignore=vendor/*,*/view $EXTENSION_PATH
+${VENDOR_BIN}phpcs -p --standard=PHPCompatibility --runtime-set testVersion 7.1- --runtime-set ignore_warnings_on_exit true --ignore=vendor/*,*/view $EXTENSION_PATH

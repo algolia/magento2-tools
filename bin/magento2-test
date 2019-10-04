@@ -3,6 +3,7 @@
 set -e
 
 DIR=${1?Error: no extension dir given}
+VENDOR_BIN=${2}
 
 MAGENTO_PATH=$(cd $DIR/../../.. && pwd)
 EXTENSION_PATH=$MAGENTO_PATH/vendor/algolia/algoliasearch-magento-2
@@ -13,7 +14,7 @@ NC='\033[0m' # No Color
 
 printf "\n1. Analysing ${GREEN}Coding Style${NC} \n\n"
 
-php-cs-fixer fix --allow-risky=yes $EXTENSION_PATH --dry-run
+${VENDOR_BIN}php-cs-fixer fix --allow-risky=yes $EXTENSION_PATH --dry-run
 
 printf "\n2. Analysing ${GREEN}PHP Compatibility${NC} \n\n"
 
@@ -23,10 +24,10 @@ if [ ! -d "$PHP_COMPATIBILITY_PATH" ]; then
   PHP_COMPATIBILITY_PATH=$THIS/../phpcompatibility/php-compatibility
 fi
 
-phpcs --config-set installed_paths $PHP_COMPATIBILITY_PATH
+${VENDOR_BIN}phpcs --config-set installed_paths $PHP_COMPATIBILITY_PATH
 
-phpcs -p --standard=PHPCompatibility --runtime-set testVersion 7.1- --runtime-set ignore_warnings_on_exit true --ignore=vendor/*,*/view $EXTENSION_PATH
+${VENDOR_BIN}phpcs -p --standard=PHPCompatibility --runtime-set testVersion 7.1- --runtime-set ignore_warnings_on_exit true --ignore=vendor/*,*/view $EXTENSION_PATH
 
 printf "\n3. Analysing ${GREEN}Type Checking${NC} \n\n"
 
-cd $MAGENTO_PATH && phpstan analyse -c $EXTENSION_PATH/phpstan.neon
+cd $MAGENTO_PATH && ${VENDOR_BIN}phpstan analyse --memory-limit=4000M -c $EXTENSION_PATH/phpstan.neon

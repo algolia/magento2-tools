@@ -3,8 +3,9 @@
 set -e
 
 DIR=${1?Error: no extension dir given}
+VENDOR_BIN=${2}
 
 MAGENTO_PATH=$(cd $DIR/../../.. && pwd)
 EXTENSION_PATH=$MAGENTO_PATH/vendor/algolia/algoliasearch-magento-2
 
-php-cs-fixer fix --allow-risky=yes $EXTENSION_PATH
+${VENDOR_BIN}php-cs-fixer fix --allow-risky=yes $EXTENSION_PATH
