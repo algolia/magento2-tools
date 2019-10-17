@@ -2,14 +2,14 @@
 
 set -e
 
-magento2-update
-
 DIR=${1?Error: no extension dir given}
 VENDOR_BIN=${2}
 
 MAGENTO_PATH=$(cd $DIR/../../.. && pwd)
 EXTENSION_PATH=$MAGENTO_PATH/vendor/algolia/algoliasearch-magento-2
 THIS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+${VENDOR_BIN}magento2-update
 
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color

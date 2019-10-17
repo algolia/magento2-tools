@@ -2,12 +2,12 @@
 
 set -e
 
-magento2-update
-
 DIR=${1?Error: no extension dir given}
 VENDOR_BIN=${2}
 
 MAGENTO_PATH=$(cd $DIR/../../.. && pwd)
 EXTENSION_PATH=$MAGENTO_PATH/vendor/algolia/algoliasearch-magento-2
+
+${VENDOR_BIN}magento2-update
 
 ${VENDOR_BIN}php-cs-fixer fix --allow-risky=yes $EXTENSION_PATH
