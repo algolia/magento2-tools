@@ -2,6 +2,8 @@
 
 set -e
 
+magento2-update
+
 DIR=${1?Error: no extension dir given}
 VENDOR_BIN=${2}
 
