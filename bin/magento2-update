@@ -2,7 +2,7 @@
 
 set -e
 
-CURRENT_VERSION=v0.1.7
+CURRENT_VERSION=v0.2.0
 
 get_latest_release() {
   curl --silent "https://api.github.com/repos/algolia/magento2-tools/releases/latest" | # Get latest release from GitHub api
@@ -10,11 +10,14 @@ get_latest_release() {
     sed -E 's/.*"([^"]+)".*/\1/'                                    # Pluck JSON value
 }
 
-echo "Current version: " "$CURRENT_VERSION"
-echo "Latest version: " "$CURRENT_VERSION"
+LATEST_VERSION="$(get_latest_release)"
 
-if [ "$(get_latest_release)" != "$CURRENT_VERSION" ]
+echo "Current version: " "$CURRENT_VERSION"
+echo "Latest version: " "$LATEST_VERSION"
+
+if [ "$LATEST_VERSION" != "$CURRENT_VERSION" ]
 then
     echo "Updating to latest version..."
-    composer global update algolia/magento2-tools && echo "Latest vesion is now installed, please re-run the command again."
+    composer global remove algolia/magento2-tools && composer global require algolia/magento2-tools && echo "Latest vesion is now installed, please re-run the command again."
+    exit 1
 fi
