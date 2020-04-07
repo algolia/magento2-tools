@@ -12,7 +12,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "bitexpert/phpstan-magento": "dev-master#3ee30de",
+        "bitexpert/phpstan-magento": "dev-master",
         "friendsofphp/php-cs-fixer": "^2.15",
         "phpcompatibility/php-compatibility": "^9.3",
         "phpstan/extension-installer": "^1.0",
@@ -23,6 +23,10 @@
         {
             "type": "composer",
             "url": "https://repo.packagist.org"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/algolia/phpstan-magento"
         }
     ],
     "config": {
