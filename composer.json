@@ -23,10 +23,6 @@
         {
             "type": "composer",
             "url": "https://repo.packagist.org"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/algolia/phpstan-magento"
         }
     ],
     "config": {
