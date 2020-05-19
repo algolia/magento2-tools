@@ -2,7 +2,7 @@
 
 set -e
 
-CURRENT_VERSION=v0.2.5
+CURRENT_VERSION=v0.2.6
 
 get_latest_release() {
   curl --silent "https://api.github.com/repos/algolia/magento2-tools/releases/latest" | # Get latest release from GitHub api
