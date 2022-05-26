@@ -19,4 +19,4 @@ fi
 
 ${VENDOR_BIN}phpcs --config-set installed_paths $PHP_COMPATIBILITY_PATH
 
-${VENDOR_BIN}phpcs -p --standard=PHPCompatibility --runtime-set testVersion 7.1- --runtime-set ignore_warnings_on_exit true --ignore=vendor/*,*/view $EXTENSION_PATH
+${VENDOR_BIN}phpcs -p --standard=PHPCompatibility --runtime-set testVersion 7.4- --runtime-set ignore_warnings_on_exit true --ignore=vendor/*,*/view $EXTENSION_PATH
