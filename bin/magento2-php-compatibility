@@ -4,12 +4,20 @@ set -e
 
 DIR=${1?Error: no extension dir given}
 VENDOR_BIN=${2}
+THIS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 MAGENTO_PATH=$(cd $DIR/../../.. && pwd)
 EXTENSION_PATH=$MAGENTO_PATH/vendor/algolia/algoliasearch-magento-2
-THIS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-${VENDOR_BIN}magento2-update
+if [ -z "$VENDOR_BIN" ]; then
+  if [ -d "$THIS/../vendor/bin" ]; then
+    VENDOR_BIN="$THIS/../vendor/bin/"
+  elif [ -d "$THIS/../../../bin" ]; then
+    VENDOR_BIN="$THIS/../../../bin/"
+  fi
+fi
+
+"$THIS/magento2-update"
 
 PHP_COMPATIBILITY_PATH=$THIS/../vendor/phpcompatibility/php-compatibility
 

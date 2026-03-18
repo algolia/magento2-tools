@@ -18,8 +18,10 @@ so the `magento2-tool` executable can be located by your system.
 
 Finally, you can launch the quality tools with:
 ```bash
-{command} path/to/magento/extension
+{command} path/to/magento/extension [vendor/bin/path/]
 ```
+
+The second argument is optional. If omitted, the scripts will attempt to auto-resolve the vendor bin directory by checking for a local `vendor/bin/` install (e.g. after running `composer install` in the package directory) and then falling back to the global Composer vendor bin. If neither is found, the tools are expected to be on your `$PATH`.
 
 Here is the list of available commands:
 
