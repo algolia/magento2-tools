@@ -4,20 +4,10 @@ set -e
 
 DIR=${1?Error: no extension dir given}
 VENDOR_BIN=${2}
-THIS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-MAGENTO_PATH=$(cd $DIR/../../.. && pwd)
-EXTENSION_PATH=$MAGENTO_PATH/vendor/algolia/algoliasearch-magento-2
-
-if [ -z "$VENDOR_BIN" ]; then
-  if [ -d "$THIS/../vendor/bin" ]; then
-    VENDOR_BIN="$THIS/../vendor/bin/"
-  elif [ -d "$THIS/../../../bin" ]; then
-    VENDOR_BIN="$THIS/../../../bin/"
-  fi
-fi
-
-"$THIS/magento2-update"
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+# shellcheck source=../lib/env.sh
+source "$SCRIPT_DIR/../lib/env.sh"
 
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
@@ -28,10 +18,10 @@ ${VENDOR_BIN}php-cs-fixer fix --allow-risky=yes $EXTENSION_PATH --dry-run
 
 printf "\n2. Analysing ${GREEN}PHP Compatibility${NC} \n\n"
 
-PHP_COMPATIBILITY_PATH=$THIS/../../../vendor/phpcompatibility/php-compatibility
+PHP_COMPATIBILITY_PATH=$BIN_DIR/../../../vendor/phpcompatibility/php-compatibility
 
 if [ ! -d "$PHP_COMPATIBILITY_PATH" ]; then
-  PHP_COMPATIBILITY_PATH=$THIS/../../../phpcompatibility/php-compatibility
+  PHP_COMPATIBILITY_PATH=$BIN_DIR/../../../phpcompatibility/php-compatibility
 fi
 
 ${VENDOR_BIN}phpcs --config-set installed_paths $PHP_COMPATIBILITY_PATH
