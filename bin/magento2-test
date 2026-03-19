@@ -2,7 +2,7 @@
 
 set -e
 
-DIR=${1?Error: no extension dir given}
+EXTENSION_DIR=${1?Error: no extension dir given}
 VENDOR_BIN=${2}
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 
 printf "\n1. Analysing ${GREEN}Coding Style${NC} \n\n"
 
-${VENDOR_BIN}php-cs-fixer fix --allow-risky=yes $EXTENSION_PATH --dry-run
+${VENDOR_BIN}php-cs-fixer fix --allow-risky=yes "$EXTENSION_DIR" --dry-run
 
 printf "\n2. Analysing ${GREEN}PHP Compatibility${NC} \n\n"
 
@@ -26,4 +26,4 @@ fi
 
 ${VENDOR_BIN}phpcs --config-set installed_paths $PHP_COMPATIBILITY_PATH
 
-${VENDOR_BIN}phpcs -p --standard=PHPCompatibility --runtime-set testVersion 7.4- --runtime-set ignore_warnings_on_exit true --ignore=vendor/*,*/view $EXTENSION_PATH
+${VENDOR_BIN}phpcs -p --standard=PHPCompatibility --runtime-set testVersion 7.4- --runtime-set ignore_warnings_on_exit true --ignore=vendor/*,*/view "$EXTENSION_DIR"

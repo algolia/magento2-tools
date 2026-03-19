@@ -23,18 +23,9 @@ There are no build steps or test suites for this repository itself.
 
 ## Architecture
 
-The scripts assume a specific Magento directory structure:
+Each bin script sets `EXTENSION_DIR` (argument 1) and `VENDOR_BIN` (argument 2), then sources `lib/env.sh` which handles shared setup: resolving `LIB_DIR`/`BIN_DIR`, auto-detecting `VENDOR_BIN`, and running `magento2-update`. The tools then operate directly on `EXTENSION_DIR`.
 
-```
-{magento-root}/
-  vendor/
-    algolia/
-      algoliasearch-magento-2/   ← the extension (passed as argument)
-```
-
-Each script navigates three levels up from the given extension path to resolve `$MAGENTO_PATH`, then constructs `$EXTENSION_PATH` at `$MAGENTO_PATH/vendor/algolia/algoliasearch-magento-2`.
-
-**PHP Compatibility path detection** — the scripts check two possible locations for the `phpcompatibility/php-compatibility` package (relative to the script itself), handling both local and global Composer install layouts.
+**PHP Compatibility path detection** — `magento2-test` and `magento2-php-compatibility` check two possible locations for the `phpcompatibility/php-compatibility` package relative to `BIN_DIR`, handling both local and global Composer install layouts.
 
 ## Release Process
 
