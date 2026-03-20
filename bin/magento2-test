@@ -27,3 +27,17 @@ fi
 ${VENDOR_BIN}phpcs --config-set installed_paths $PHP_COMPATIBILITY_PATH
 
 ${VENDOR_BIN}phpcs -p --standard=PHPCompatibility --runtime-set testVersion 7.4- --runtime-set ignore_warnings_on_exit true --ignore=vendor/*,*/view "$EXTENSION_DIR"
+
+printf "\n3. Analysing ${GREEN}Static Analysis (PHPStan)${NC} \n\n"
+
+PHPSTAN_ARGS="--memory-limit=4G"
+
+if [ -f "$EXTENSION_DIR/phpstan.neon" ]; then
+  PHPSTAN_ARGS="$PHPSTAN_ARGS -c $EXTENSION_DIR/phpstan.neon"
+elif [ -f "$EXTENSION_DIR/phpstan.neon.dist" ]; then
+  PHPSTAN_ARGS="$PHPSTAN_ARGS -c $EXTENSION_DIR/phpstan.neon.dist"
+else
+  PHPSTAN_ARGS="$PHPSTAN_ARGS --level 1"
+fi
+
+${VENDOR_BIN}phpstan analyse $PHPSTAN_ARGS "$EXTENSION_DIR"

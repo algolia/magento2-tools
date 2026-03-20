@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -e
+
+EXTENSION_DIR=${1?Error: no extension dir given}
+VENDOR_BIN=${2}
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+# shellcheck source=../lib/env.sh
+source "$SCRIPT_DIR/../lib/env.sh"
+
+PHPSTAN_ARGS="--memory-limit=4G"
+
+if [ -f "$EXTENSION_DIR/phpstan.neon" ]; then
+  PHPSTAN_ARGS="$PHPSTAN_ARGS -c $EXTENSION_DIR/phpstan.neon"
+elif [ -f "$EXTENSION_DIR/phpstan.neon.dist" ]; then
+  PHPSTAN_ARGS="$PHPSTAN_ARGS -c $EXTENSION_DIR/phpstan.neon.dist"
+else
+  PHPSTAN_ARGS="$PHPSTAN_ARGS --level 1"
+fi
+
+${VENDOR_BIN}phpstan analyse $PHPSTAN_ARGS "$EXTENSION_DIR"

@@ -14,8 +14,9 @@ All tools live in [bin/](bin/) and accept two arguments:
 
 | Command | Purpose |
 |---|---|
+| `magento2-analyse` | Runs PHPStan static analysis against the extension |
 | `magento2-lint` | Runs php-cs-fixer and **modifies** files in place |
-| `magento2-test` | Dry-run of coding style + PHP compatibility checks (no modifications) |
+| `magento2-test` | Dry-run of coding style + PHP compatibility + PHPStan checks (no modifications) |
 | `magento2-php-compatibility` | Checks PHP version compatibility using PHPCompatibility/phpcs |
 | `magento2-update` | Auto-updates this package via Composer if a newer version is available |
 
@@ -26,6 +27,8 @@ There are no build steps or test suites for this repository itself.
 Each bin script sets `EXTENSION_DIR` (argument 1) and `VENDOR_BIN` (argument 2), then sources `lib/env.sh` which handles shared setup: resolving `LIB_DIR`/`BIN_DIR`, auto-detecting `VENDOR_BIN`, and running `magento2-update`. The tools then operate directly on `EXTENSION_DIR`.
 
 **PHP Compatibility path detection** — `magento2-test` and `magento2-php-compatibility` check two possible locations for the `phpcompatibility/php-compatibility` package relative to `BIN_DIR`, handling both local and global Composer install layouts.
+
+**PHPStan config detection** — `magento2-analyse` and `magento2-test` check for `phpstan.neon` then `phpstan.neon.dist` in `EXTENSION_DIR`. If neither exists, PHPStan runs at level 1 as a sensible default.
 
 ## Release Process
 

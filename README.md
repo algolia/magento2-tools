@@ -27,11 +27,11 @@ Here is the list of available commands:
 
 - **`magento2-lint`**: Runs the linter and fixes the found issues - configuration file under `algoliasearch-magento-2/.php-cs-fixer.php`.
 
-- **`magento2-types`**: Runs the type checker and displays the found issues - configuration file under `algoliasearch-magento-2/phpstan.neon`.
+- **`magento2-analyse`**: Runs PHPStan static analysis. Uses `phpstan.neon` or `phpstan.neon.dist` from the extension directory if present; otherwise runs at level 1 with sensible defaults.
 
-- **`magento2-php-compatibility`**: Checks if your code is compatibility between multiple all php versions supported by magento.
+- **`magento2-php-compatibility`**: Checks if your code is compatible across all PHP versions supported by Magento.
 
-- **`magento2-test`**: Runs all previous commands in `--dry-run` mode.
+- **`magento2-test`**: Runs all previous commands in `--dry-run` / read-only mode (coding style, PHP compatibility, and PHPStan analysis).
 
 ## Release process
 
