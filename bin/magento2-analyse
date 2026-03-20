@@ -4,7 +4,6 @@ set -e
 
 EXTENSION_DIR=${1?Error: no extension dir given}
 VENDOR_BIN=${2}
-MAGENTO_ROOT_ARG=${3}
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # shellcheck source=../lib/env.sh
@@ -14,58 +13,44 @@ source "$SCRIPT_DIR/../lib/detect-magento.sh"
 
 LIB_PHPSTAN_DIR="$SCRIPT_DIR/../lib/phpstan"
 
+RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
 
 # Resolve extension dir to absolute path
 EXTENSION_DIR=$(cd "$EXTENSION_DIR" && pwd)
 
-# Resolve the vendor directory (contains phpstan extensions).
-# Same two-layout logic as env.sh uses for VENDOR_BIN.
+# Detect Magento root — required for meaningful PHPStan analysis
+if ! detect_magento_root "$EXTENSION_DIR"; then
+    printf "${RED}Error:${NC} Could not detect a Magento root installation.\n"
+    printf "PHPStan requires the full Magento dependency chain to produce useful results.\n"
+    printf "Ensure the extension is installed within a Magento project (e.g. via Composer).\n"
+    exit 1
+fi
+
+printf "${GREEN}Magento root detected:${NC} %s\n\n" "$MAGENTO_ROOT"
+
+# Resolve the vendor directory containing phpstan extensions bundled with magento2-tools.
 TOOLS_VENDOR_DIR=""
 if [ -d "$LIB_DIR/../vendor" ]; then
-  TOOLS_VENDOR_DIR=$(cd "$LIB_DIR/../vendor" && pwd)
+    TOOLS_VENDOR_DIR=$(cd "$LIB_DIR/../vendor" && pwd)
 elif [ -d "$LIB_DIR/../../../vendor" ]; then
-  TOOLS_VENDOR_DIR=$(cd "$LIB_DIR/../../../vendor" && pwd)
-fi
-
-# Determine analysis tier: explicit Magento root takes precedence over auto-detection
-if [ -n "$MAGENTO_ROOT_ARG" ]; then
-    MAGENTO_ROOT=$(cd "$MAGENTO_ROOT_ARG" && pwd)
-    ANALYSIS_TIER=2
-else
-    detect_magento_root "$EXTENSION_DIR" || true
-fi
-
-if [ "$ANALYSIS_TIER" = "2" ]; then
-    printf "${GREEN}Magento root detected:${NC} %s\n" "$MAGENTO_ROOT"
-    printf "${GREEN}Analysis tier:${NC} 2 (full — framework classes resolved)\n\n"
-    BASE_CONFIG="$LIB_PHPSTAN_DIR/magento2-tools-full.neon"
-else
-    printf "${YELLOW}No Magento root found${NC}\n"
-    printf "${YELLOW}Analysis tier:${NC} 1 (standalone — framework class errors suppressed)\n\n"
-    BASE_CONFIG="$LIB_PHPSTAN_DIR/magento2-tools.neon"
+    TOOLS_VENDOR_DIR=$(cd "$LIB_DIR/../../../vendor" && pwd)
 fi
 
 # Generate a runtime neon that wires everything together with absolute paths.
-# We use a temp file because neon includes resolve relative to the file,
-# and we need to reference configs from multiple locations (lib/, vendor/, extension/).
 RUNTIME_NEON=$(mktemp /tmp/phpstan-magento2-tools.XXXXXX.neon)
 trap "rm -f $RUNTIME_NEON" EXIT
 
 # --- Build includes ---
 echo "includes:" > "$RUNTIME_NEON"
-echo "    - $BASE_CONFIG" >> "$RUNTIME_NEON"
+echo "    - $LIB_PHPSTAN_DIR/magento2-tools.neon" >> "$RUNTIME_NEON"
 
-# Include phpstan-phpunit (safe in both tiers — just provides PHPUnit type stubs)
 if [ -n "$TOOLS_VENDOR_DIR" ] && [ -f "$TOOLS_VENDOR_DIR/phpstan/phpstan-phpunit/extension.neon" ]; then
     echo "    - $TOOLS_VENDOR_DIR/phpstan/phpstan-phpunit/extension.neon" >> "$RUNTIME_NEON"
 fi
 
-# Tier 2 only: include phpstan-magento AFTER setting magentoRoot so ClassLoaderProvider
-# loads the correct Magento vendor/autoload.php
-if [ "$ANALYSIS_TIER" = "2" ] && [ -n "$TOOLS_VENDOR_DIR" ] && [ -f "$TOOLS_VENDOR_DIR/bitexpert/phpstan-magento/extension.neon" ]; then
+if [ -n "$TOOLS_VENDOR_DIR" ] && [ -f "$TOOLS_VENDOR_DIR/bitexpert/phpstan-magento/extension.neon" ]; then
     echo "    - $TOOLS_VENDOR_DIR/bitexpert/phpstan-magento/extension.neon" >> "$RUNTIME_NEON"
 fi
 
@@ -78,13 +63,10 @@ fi
 
 # --- Build parameters ---
 echo "" >> "$RUNTIME_NEON"
-echo "parameters:" >> "$RUNTIME_NEON"
-
-if [ "$ANALYSIS_TIER" = "2" ]; then
-    cat >> "$RUNTIME_NEON" <<NEON_TIER2
+cat >> "$RUNTIME_NEON" <<NEON
+parameters:
     magento:
         magentoRoot: $MAGENTO_ROOT
-NEON_TIER2
-fi
+NEON
 
 ${VENDOR_BIN}phpstan analyse --memory-limit=4G -c "$RUNTIME_NEON" "$EXTENSION_DIR"

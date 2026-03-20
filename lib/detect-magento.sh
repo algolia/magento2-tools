@@ -4,8 +4,7 @@
 # Usage: source this file, then call detect_magento_root "$EXTENSION_DIR"
 #
 # Sets:
-#   MAGENTO_ROOT  — absolute path to the Magento root, or empty if not found
-#   ANALYSIS_TIER — 1 (standalone) or 2 (full, Magento root available)
+#   MAGENTO_ROOT — absolute path to the Magento root, or empty if not found
 
 detect_magento_root() {
     local ext_dir="$1"
@@ -16,7 +15,6 @@ detect_magento_root() {
         local candidate="${ext_dir%%/vendor/*}"
         if [ -f "$candidate/app/etc/env.php" ] || [ -f "$candidate/bin/magento" ]; then
             MAGENTO_ROOT="$candidate"
-            ANALYSIS_TIER=2
             return 0
         fi
     fi
@@ -27,12 +25,10 @@ detect_magento_root() {
         dir="$(dirname "$dir")"
         if [ -f "$dir/app/etc/env.php" ] || [ -f "$dir/bin/magento" ]; then
             MAGENTO_ROOT="$dir"
-            ANALYSIS_TIER=2
             return 0
         fi
     done
 
     MAGENTO_ROOT=""
-    ANALYSIS_TIER=1
     return 1
 }
