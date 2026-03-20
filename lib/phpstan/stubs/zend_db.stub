@@ -1,0 +1,148 @@
+<?php
+
+/**
+ * Stubs for legacy Zend Framework 1 database classes bundled with Magento 2.
+ * These classes exist at runtime in Magento's lib/ directory but are unavailable
+ * during standalone static analysis.
+ */
+
+class Zend_Db_Expr
+{
+    /** @param string $expression */
+    public function __construct($expression) {}
+
+    /** @return string */
+    public function __toString() {}
+}
+
+class Zend_Db_Select
+{
+    public const DISTINCT       = 'distinct';
+    public const COLUMNS        = 'columns';
+    public const FROM           = 'from';
+    public const UNION          = 'union';
+    public const WHERE          = 'where';
+    public const GROUP          = 'group';
+    public const HAVING         = 'having';
+    public const ORDER          = 'order';
+    public const LIMIT_COUNT    = 'limitcount';
+    public const LIMIT_OFFSET   = 'limitoffset';
+    public const FOR_UPDATE     = 'forupdate';
+    public const INNER_JOIN     = 'inner join';
+    public const LEFT_JOIN      = 'left join';
+    public const RIGHT_JOIN     = 'right join';
+    public const FULL_JOIN      = 'full join';
+    public const CROSS_JOIN     = 'cross join';
+    public const NATURAL_JOIN   = 'natural join';
+    public const SQL_WILDCARD   = '*';
+    public const SQL_SELECT     = 'SELECT';
+    public const SQL_UNION      = 'UNION';
+    public const SQL_UNION_ALL  = 'UNION ALL';
+    public const SQL_FROM       = 'FROM';
+    public const SQL_WHERE      = 'WHERE';
+    public const SQL_DISTINCT   = 'DISTINCT';
+    public const SQL_GROUP_BY   = 'GROUP BY';
+    public const SQL_ORDER_BY   = 'ORDER BY';
+    public const SQL_HAVING     = 'HAVING';
+    public const SQL_FOR_UPDATE = 'FOR UPDATE';
+    public const SQL_AND        = 'AND';
+    public const SQL_AS         = 'AS';
+    public const SQL_OR         = 'OR';
+    public const SQL_ON         = 'ON';
+    public const SQL_ASC        = 'ASC';
+    public const SQL_DESC       = 'DESC';
+
+    /**
+     * @param string|array<string, string> $name
+     * @param string $cols
+     * @param string|null $schema
+     * @return $this
+     */
+    public function from($name, $cols = '*', $schema = null) {}
+
+    /**
+     * @param string|array<string, string> $name
+     * @param string $cond
+     * @param string|array<int, string> $cols
+     * @param string|null $schema
+     * @return $this
+     */
+    public function join($name, $cond, $cols = self::SQL_WILDCARD, $schema = null) {}
+
+    /**
+     * @param string|array<string, string> $name
+     * @param string $cond
+     * @param string|array<int, string> $cols
+     * @param string|null $schema
+     * @return $this
+     */
+    public function joinLeft($name, $cond, $cols = self::SQL_WILDCARD, $schema = null) {}
+
+    /**
+     * @param string|array<int, string|Zend_Db_Expr> $cols
+     * @param string|null $correlationName
+     * @return $this
+     */
+    public function columns($cols = '*', $correlationName = null) {}
+
+    /**
+     * @param string $cond
+     * @param mixed $value
+     * @param int|null $type
+     * @return $this
+     */
+    public function where($cond, $value = null, $type = null) {}
+
+    /**
+     * @param string|array<int, string> $spec
+     * @return $this
+     */
+    public function group($spec) {}
+
+    /**
+     * @param string $cond
+     * @param mixed $value
+     * @param int|null $type
+     * @return $this
+     */
+    public function having($cond, $value = null, $type = null) {}
+
+    /**
+     * @param string|array<int, string> $spec
+     * @return $this
+     */
+    public function order($spec) {}
+
+    /**
+     * @param int $count
+     * @param int $offset
+     * @return $this
+     */
+    public function limit($count = null, $offset = null) {}
+
+    /**
+     * @param bool $flag
+     * @return $this
+     */
+    public function distinct($flag = true) {}
+
+    /** @return string */
+    public function __toString() {}
+
+    /** @return string */
+    public function assemble() {}
+
+    /**
+     * @param string $part
+     * @return $this
+     */
+    public function reset($part = null) {}
+}
+
+class Zend_Db_Select_Exception extends Zend_Db_Exception {}
+
+class Zend_Db_Exception extends Zend_Exception {}
+
+class Zend_Db_Statement_Exception extends Zend_Db_Exception {}
+
+class Zend_Exception extends Exception {}

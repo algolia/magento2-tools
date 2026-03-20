@@ -1,6 +1,11 @@
 parameters:
     level: 1
 
+    # Stub files for legacy classes that Magento bundles but aren't available standalone.
+    # These prevent internal errors from bitexpert/phpstan-magento's autoloader.
+    stubFiles:
+        - stubs/zend_db.stub
+
     # Suppress Magento framework class errors for standalone analysis (Tier 1).
     # These classes are unavailable without a full Magento installation.
     # Extensions running in a Magento root context use magento2-tools-full.neon instead.
