@@ -31,14 +31,14 @@ Each bin script sets `EXTENSION_DIR` (argument 1) and `VENDOR_BIN` (argument 2),
 
 **PHPStan tiered analysis** — `magento2-analyse` uses a two-tier model for dependency resolution:
 
-- **Tier 1 (standalone)**: No Magento root available. Uses `bitexpert/phpstan-magento` for factory/proxy stubs, `phpstan/phpstan-phpunit` for test classes, and `ignoreErrors` patterns to suppress Magento framework class errors. Base config: `lib/phpstan/magento2-tools.neon`.
-- **Tier 2 (full)**: Magento root detected or specified via arg 3. All framework classes resolved via `scanDirectories`. Config: `lib/phpstan/magento2-tools-full.neon`.
+- **Tier 1 (standalone)**: No Magento root available. `bitexpert/phpstan-magento` is NOT loaded (its autoloaders throw internal errors when framework classes are unavailable). `phpstan/phpstan-phpunit` is included for test class resolution. All missing Magento ecosystem classes (framework, factories, Zend) are suppressed via `ignoreErrors`. Config: `lib/phpstan/magento2-tools.neon`.
+- **Tier 2 (full)**: Magento root detected or specified via arg 3. `bitexpert/phpstan-magento` is loaded with correct `magentoRoot` — its `ClassLoaderProvider` bootstraps Magento's `vendor/autoload.php`, resolving all framework classes. Factory/Proxy stubs are generated. Config: `lib/phpstan/magento2-tools-full.neon`.
 
-Tier detection is handled by `lib/detect-magento.sh` which checks for `app/etc/env.php` or `bin/magento` by walking up from the extension directory or inspecting `/vendor/` path segments. A runtime neon file is generated in `/tmp` to compose the base config with any extension-level `phpstan.neon`/`phpstan.neon.dist` overlay.
+Tier detection is handled by `lib/detect-magento.sh` which checks for `app/etc/env.php` or `bin/magento` by walking up from the extension directory or inspecting `/vendor/` path segments.
+
+**Runtime neon generation** — `magento2-analyse` generates a temporary neon file in `/tmp` (cleaned up on exit) that composes absolute-path includes for the base config, PHPStan extensions, and any extension-level `phpstan.neon`/`phpstan.neon.dist` overlay. PHPStan extensions are included manually (not via `extension-installer`) so that `bitexpert/phpstan-magento` is only loaded in Tier 2.
 
 `magento2-test` delegates its PHPStan step to `magento2-analyse`. The `MAGENTO2_TOOLS_ENV_LOADED` guard in `lib/env.sh` prevents double update checks when scripts delegate to each other.
-
-**PHPStan extensions** — `phpstan/extension-installer` auto-discovers `bitexpert/phpstan-magento` and `phpstan/phpstan-phpunit` from Composer, so no manual `includes:` are needed in neon files.
 
 ## Release Process
 

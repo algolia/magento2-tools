@@ -1,31 +1,27 @@
 parameters:
     level: 1
 
-    # Stub files for legacy classes that Magento bundles but aren't available standalone.
-    # These prevent internal errors from bitexpert/phpstan-magento's autoloader.
-    stubFiles:
-        - stubs/zend_db.stub
+    # Tier 1: Standalone analysis without a Magento root.
+    # bitexpert/phpstan-magento is NOT loaded in this tier (its autoloaders
+    # throw internal errors when framework classes are unavailable).
+    #
+    # A dynamic stub autoloader generates empty class/interface definitions for
+    # Magento\* and Zend_* classes on-the-fly. This prevents PHPStan's non-ignorable
+    # "extends unknown class" errors without requiring maintained stub files.
+    #
+    # Identifier-based ignoreErrors then suppresses the cascading errors from empty
+    # stubs (undefined methods, constants, properties inherited from framework classes).
+    # What remains are errors within the extension's own code.
+    bootstrapFiles:
+        - magento-stub-autoloader.php
 
-    # Suppress Magento framework class errors for standalone analysis (Tier 1).
-    # These classes are unavailable without a full Magento installation.
-    # Extensions running in a Magento root context use magento2-tools-full.neon instead.
     ignoreErrors:
-        - '#Class Magento\\Framework\\.* not found\.#'
-        - '#Class Magento\\Store\\.* not found\.#'
-        - '#Class Magento\\Catalog\\.* not found\.#'
-        - '#Class Magento\\Customer\\.* not found\.#'
-        - '#Class Magento\\Sales\\.* not found\.#'
-        - '#Class Magento\\Ui\\.* not found\.#'
-        - '#Class Magento\\Backend\\.* not found\.#'
-        - '#Class Magento\\Config\\.* not found\.#'
-        - '#Class Magento\\Eav\\.* not found\.#'
-        - '#Class Magento\\Search\\.* not found\.#'
-        - '#Class Magento\\Indexer\\.* not found\.#'
-        - '#Class Magento\\TestFramework\\.* not found\.#'
-        - '#Class Magento\\Quote\\.* not found\.#'
-        - '#Class Magento\\Checkout\\.* not found\.#'
-        - '#Class Magento\\Directory\\.* not found\.#'
-        - '#Class Magento\\CatalogSearch\\.* not found\.#'
-        - '#Class Magento\\Cms\\.* not found\.#'
+        # Undefined methods/constants/properties from empty Magento stubs
+        -
+            identifier: class.notFound
+        -
+            identifier: function.notFound
+        -
+            identifier: constant.notFound
 
     reportUnmatchedIgnoredErrors: false

@@ -21,6 +21,15 @@ NC='\033[0m' # No Color
 # Resolve extension dir to absolute path
 EXTENSION_DIR=$(cd "$EXTENSION_DIR" && pwd)
 
+# Resolve the vendor directory (contains phpstan extensions).
+# Same two-layout logic as env.sh uses for VENDOR_BIN.
+TOOLS_VENDOR_DIR=""
+if [ -d "$LIB_DIR/../vendor" ]; then
+  TOOLS_VENDOR_DIR=$(cd "$LIB_DIR/../vendor" && pwd)
+elif [ -d "$LIB_DIR/../../../vendor" ]; then
+  TOOLS_VENDOR_DIR=$(cd "$LIB_DIR/../../../vendor" && pwd)
+fi
+
 # Determine analysis tier: explicit Magento root takes precedence over auto-detection
 if [ -n "$MAGENTO_ROOT_ARG" ]; then
     MAGENTO_ROOT=$(cd "$MAGENTO_ROOT_ARG" && pwd)
@@ -39,16 +48,26 @@ else
     BASE_CONFIG="$LIB_PHPSTAN_DIR/magento2-tools.neon"
 fi
 
-# Generate a runtime neon that wires the base config together with extension overrides.
-# Using a temp file because neon includes resolve relative to the file, and we need
-# absolute paths to reference configs from different locations.
+# Generate a runtime neon that wires everything together with absolute paths.
+# We use a temp file because neon includes resolve relative to the file,
+# and we need to reference configs from multiple locations (lib/, vendor/, extension/).
 RUNTIME_NEON=$(mktemp /tmp/phpstan-magento2-tools.XXXXXX.neon)
 trap "rm -f $RUNTIME_NEON" EXIT
 
-cat > "$RUNTIME_NEON" <<NEON_HEADER
-includes:
-    - $BASE_CONFIG
-NEON_HEADER
+# --- Build includes ---
+echo "includes:" > "$RUNTIME_NEON"
+echo "    - $BASE_CONFIG" >> "$RUNTIME_NEON"
+
+# Include phpstan-phpunit (safe in both tiers — just provides PHPUnit type stubs)
+if [ -n "$TOOLS_VENDOR_DIR" ] && [ -f "$TOOLS_VENDOR_DIR/phpstan/phpstan-phpunit/extension.neon" ]; then
+    echo "    - $TOOLS_VENDOR_DIR/phpstan/phpstan-phpunit/extension.neon" >> "$RUNTIME_NEON"
+fi
+
+# Tier 2 only: include phpstan-magento AFTER setting magentoRoot so ClassLoaderProvider
+# loads the correct Magento vendor/autoload.php
+if [ "$ANALYSIS_TIER" = "2" ] && [ -n "$TOOLS_VENDOR_DIR" ] && [ -f "$TOOLS_VENDOR_DIR/bitexpert/phpstan-magento/extension.neon" ]; then
+    echo "    - $TOOLS_VENDOR_DIR/bitexpert/phpstan-magento/extension.neon" >> "$RUNTIME_NEON"
+fi
 
 # Include extension-level config as an overlay (if present)
 if [ -f "$EXTENSION_DIR/phpstan.neon" ]; then
@@ -57,7 +76,7 @@ elif [ -f "$EXTENSION_DIR/phpstan.neon.dist" ]; then
     echo "    - $EXTENSION_DIR/phpstan.neon.dist" >> "$RUNTIME_NEON"
 fi
 
-# Add tier-specific parameters
+# --- Build parameters ---
 echo "" >> "$RUNTIME_NEON"
 echo "parameters:" >> "$RUNTIME_NEON"
 
@@ -65,14 +84,7 @@ if [ "$ANALYSIS_TIER" = "2" ]; then
     cat >> "$RUNTIME_NEON" <<NEON_TIER2
     magento:
         magentoRoot: $MAGENTO_ROOT
-    scanDirectories:
-        - $MAGENTO_ROOT/vendor/magento/framework
 NEON_TIER2
-else
-    cat >> "$RUNTIME_NEON" <<NEON_TIER1
-    magento:
-        magentoRoot: $EXTENSION_DIR
-NEON_TIER1
 fi
 
 ${VENDOR_BIN}phpstan analyse --memory-limit=4G -c "$RUNTIME_NEON" "$EXTENSION_DIR"
