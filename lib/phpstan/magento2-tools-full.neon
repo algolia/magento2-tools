@@ -1,0 +1,8 @@
+includes:
+    - magento2-tools.neon
+
+parameters:
+    # Tier 2: Full analysis with Magento root available.
+    # Clear the framework ignoreErrors since real classes are resolvable.
+    ignoreErrors: []
+    reportUnmatchedIgnoredErrors: true

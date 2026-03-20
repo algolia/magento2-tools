@@ -8,13 +8,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-All tools live in [bin/](bin/) and accept two arguments:
+All tools live in [bin/](bin/) and accept arguments:
 1. `path/to/magento/extension` — the extension directory (required)
 2. Optional vendor bin path prefix
+3. `magento2-analyse` also accepts an optional third argument: path to a Magento root
 
 | Command | Purpose |
 |---|---|
-| `magento2-analyse` | Runs PHPStan static analysis against the extension |
+| `magento2-analyse` | Runs PHPStan static analysis with tiered dependency resolution |
 | `magento2-lint` | Runs php-cs-fixer and **modifies** files in place |
 | `magento2-test` | Dry-run of coding style + PHP compatibility + PHPStan checks (no modifications) |
 | `magento2-php-compatibility` | Checks PHP version compatibility using PHPCompatibility/phpcs |
@@ -28,7 +29,16 @@ Each bin script sets `EXTENSION_DIR` (argument 1) and `VENDOR_BIN` (argument 2),
 
 **PHP Compatibility path detection** — `magento2-test` and `magento2-php-compatibility` check two possible locations for the `phpcompatibility/php-compatibility` package relative to `BIN_DIR`, handling both local and global Composer install layouts.
 
-**PHPStan config detection** — `magento2-analyse` and `magento2-test` check for `phpstan.neon` then `phpstan.neon.dist` in `EXTENSION_DIR`. If neither exists, PHPStan runs at level 1 as a sensible default.
+**PHPStan tiered analysis** — `magento2-analyse` uses a two-tier model for dependency resolution:
+
+- **Tier 1 (standalone)**: No Magento root available. Uses `bitexpert/phpstan-magento` for factory/proxy stubs, `phpstan/phpstan-phpunit` for test classes, and `ignoreErrors` patterns to suppress Magento framework class errors. Base config: `lib/phpstan/magento2-tools.neon`.
+- **Tier 2 (full)**: Magento root detected or specified via arg 3. All framework classes resolved via `scanDirectories`. Config: `lib/phpstan/magento2-tools-full.neon`.
+
+Tier detection is handled by `lib/detect-magento.sh` which checks for `app/etc/env.php` or `bin/magento` by walking up from the extension directory or inspecting `/vendor/` path segments. A runtime neon file is generated in `/tmp` to compose the base config with any extension-level `phpstan.neon`/`phpstan.neon.dist` overlay.
+
+`magento2-test` delegates its PHPStan step to `magento2-analyse`. The `MAGENTO2_TOOLS_ENV_LOADED` guard in `lib/env.sh` prevents double update checks when scripts delegate to each other.
+
+**PHPStan extensions** — `phpstan/extension-installer` auto-discovers `bitexpert/phpstan-magento` and `phpstan/phpstan-phpunit` from Composer, so no manual `includes:` are needed in neon files.
 
 ## Release Process
 

@@ -30,4 +30,9 @@ if [ -z "$VENDOR_BIN" ]; then
   fi
 fi
 
-"$BIN_DIR/magento2-update"
+# Guard against running the update check twice when scripts delegate to each other
+# (e.g. magento2-test calling magento2-analyse).
+if [ -z "$MAGENTO2_TOOLS_ENV_LOADED" ]; then
+    "$BIN_DIR/magento2-update"
+    export MAGENTO2_TOOLS_ENV_LOADED=1
+fi

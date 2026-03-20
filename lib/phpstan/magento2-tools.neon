@@ -1,0 +1,26 @@
+parameters:
+    level: 1
+
+    # Suppress Magento framework class errors for standalone analysis (Tier 1).
+    # These classes are unavailable without a full Magento installation.
+    # Extensions running in a Magento root context use magento2-tools-full.neon instead.
+    ignoreErrors:
+        - '#Class Magento\\Framework\\.* not found\.#'
+        - '#Class Magento\\Store\\.* not found\.#'
+        - '#Class Magento\\Catalog\\.* not found\.#'
+        - '#Class Magento\\Customer\\.* not found\.#'
+        - '#Class Magento\\Sales\\.* not found\.#'
+        - '#Class Magento\\Ui\\.* not found\.#'
+        - '#Class Magento\\Backend\\.* not found\.#'
+        - '#Class Magento\\Config\\.* not found\.#'
+        - '#Class Magento\\Eav\\.* not found\.#'
+        - '#Class Magento\\Search\\.* not found\.#'
+        - '#Class Magento\\Indexer\\.* not found\.#'
+        - '#Class Magento\\TestFramework\\.* not found\.#'
+        - '#Class Magento\\Quote\\.* not found\.#'
+        - '#Class Magento\\Checkout\\.* not found\.#'
+        - '#Class Magento\\Directory\\.* not found\.#'
+        - '#Class Magento\\CatalogSearch\\.* not found\.#'
+        - '#Class Magento\\Cms\\.* not found\.#'
+
+    reportUnmatchedIgnoredErrors: false
