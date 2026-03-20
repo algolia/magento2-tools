@@ -25,7 +25,7 @@ The second argument is optional. If omitted, the scripts will attempt to auto-re
 
 Here is the list of available commands:
 
-- **`magento2-lint`**: Runs the linter and fixes the found issues - configuration file under `algoliasearch-magento-2/.php_cs`.
+- **`magento2-lint`**: Runs the linter and fixes the found issues - configuration file under `algoliasearch-magento-2/.php-cs-fixer.php`.
 
 - **`magento2-types`**: Runs the type checker and displays the found issues - configuration file under `algoliasearch-magento-2/phpstan.neon`.
 
