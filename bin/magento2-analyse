@@ -67,6 +67,14 @@ cat >> "$RUNTIME_NEON" <<NEON
 parameters:
     magento:
         magentoRoot: $MAGENTO_ROOT
+    bootstrapFiles:
+        - $MAGENTO_ROOT/vendor/autoload.php
 NEON
 
-${VENDOR_BIN}phpstan analyse --memory-limit=4G -c "$RUNTIME_NEON" "$EXTENSION_DIR"
+# If the extension provides its own neon config (with paths), let PHPStan use those.
+# Otherwise fall back to scanning the entire extension directory.
+if [ -f "$EXTENSION_DIR/phpstan.neon" ] || [ -f "$EXTENSION_DIR/phpstan.neon.dist" ]; then
+    ${VENDOR_BIN}phpstan analyse --memory-limit=4G -c "$RUNTIME_NEON"
+else
+    ${VENDOR_BIN}phpstan analyse --memory-limit=4G -c "$RUNTIME_NEON" "$EXTENSION_DIR"
+fi
