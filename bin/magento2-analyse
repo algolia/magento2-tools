@@ -1,0 +1,80 @@
+#!/bin/bash
+
+set -e
+
+EXTENSION_DIR=${1?Error: no extension dir given}
+VENDOR_BIN=${2}
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+# shellcheck source=../lib/env.sh
+source "$SCRIPT_DIR/../lib/env.sh"
+# shellcheck source=../lib/detect-magento.sh
+source "$SCRIPT_DIR/../lib/detect-magento.sh"
+
+LIB_PHPSTAN_DIR="$SCRIPT_DIR/../lib/phpstan"
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+# Resolve extension dir to absolute path
+EXTENSION_DIR=$(cd "$EXTENSION_DIR" && pwd)
+
+# Detect Magento root — required for meaningful PHPStan analysis
+if ! detect_magento_root "$EXTENSION_DIR"; then
+    printf "${RED}Error:${NC} Could not detect a Magento root installation.\n"
+    printf "PHPStan requires the full Magento dependency chain to produce useful results.\n"
+    printf "Ensure the extension is installed within a Magento project (e.g. via Composer).\n"
+    exit 1
+fi
+
+printf "${GREEN}Magento root detected:${NC} %s\n\n" "$MAGENTO_ROOT"
+
+# Resolve the vendor directory containing phpstan extensions bundled with magento2-tools.
+TOOLS_VENDOR_DIR=""
+if [ -d "$LIB_DIR/../vendor" ]; then
+    TOOLS_VENDOR_DIR=$(cd "$LIB_DIR/../vendor" && pwd)
+elif [ -d "$LIB_DIR/../../../vendor" ]; then
+    TOOLS_VENDOR_DIR=$(cd "$LIB_DIR/../../../vendor" && pwd)
+fi
+
+# Generate a runtime neon that wires everything together with absolute paths.
+RUNTIME_NEON=$(mktemp /tmp/phpstan-magento2-tools.XXXXXX.neon)
+trap "rm -f $RUNTIME_NEON" EXIT
+
+# --- Build includes ---
+echo "includes:" > "$RUNTIME_NEON"
+echo "    - $LIB_PHPSTAN_DIR/magento2-tools.neon" >> "$RUNTIME_NEON"
+
+if [ -n "$TOOLS_VENDOR_DIR" ] && [ -f "$TOOLS_VENDOR_DIR/phpstan/phpstan-phpunit/extension.neon" ]; then
+    echo "    - $TOOLS_VENDOR_DIR/phpstan/phpstan-phpunit/extension.neon" >> "$RUNTIME_NEON"
+fi
+
+if [ -n "$TOOLS_VENDOR_DIR" ] && [ -f "$TOOLS_VENDOR_DIR/bitexpert/phpstan-magento/extension.neon" ]; then
+    echo "    - $TOOLS_VENDOR_DIR/bitexpert/phpstan-magento/extension.neon" >> "$RUNTIME_NEON"
+fi
+
+# Include extension-level config as an overlay (if present)
+if [ -f "$EXTENSION_DIR/phpstan.neon" ]; then
+    echo "    - $EXTENSION_DIR/phpstan.neon" >> "$RUNTIME_NEON"
+elif [ -f "$EXTENSION_DIR/phpstan.neon.dist" ]; then
+    echo "    - $EXTENSION_DIR/phpstan.neon.dist" >> "$RUNTIME_NEON"
+fi
+
+# --- Build parameters ---
+echo "" >> "$RUNTIME_NEON"
+cat >> "$RUNTIME_NEON" <<NEON
+parameters:
+    magento:
+        magentoRoot: $MAGENTO_ROOT
+    bootstrapFiles:
+        - $MAGENTO_ROOT/vendor/autoload.php
+NEON
+
+# If the extension provides its own neon config (with paths), let PHPStan use those.
+# Otherwise fall back to scanning the entire extension directory.
+if [ -f "$EXTENSION_DIR/phpstan.neon" ] || [ -f "$EXTENSION_DIR/phpstan.neon.dist" ]; then
+    ${VENDOR_BIN}phpstan analyse --memory-limit=4G -c "$RUNTIME_NEON"
+else
+    ${VENDOR_BIN}phpstan analyse --memory-limit=4G -c "$RUNTIME_NEON" "$EXTENSION_DIR"
+fi
