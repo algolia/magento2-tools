@@ -38,7 +38,10 @@ if [ -n "$VENDOR_BIN" ]; then
 fi
 
 # Generate a runtime neon that wires everything together with absolute paths.
-RUNTIME_NEON=$(mktemp /tmp/phpstan-magento2-tools.XXXXXX.neon)
+RUNTIME_NEON=$(mktemp /tmp/phpstan-magento2-tools.XXXXXX)
+mv "$RUNTIME_NEON" "$RUNTIME_NEON.neon"
+RUNTIME_NEON="$RUNTIME_NEON.neon"
+
 trap "rm -f $RUNTIME_NEON" EXIT
 
 # --- Build includes ---
