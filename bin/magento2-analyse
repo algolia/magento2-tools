@@ -30,12 +30,11 @@ fi
 
 printf "${GREEN}Magento root detected:${NC} %s\n\n" "$MAGENTO_ROOT"
 
-# Resolve the vendor directory containing phpstan extensions bundled with magento2-tools.
+# VENDOR_BIN (set by env.sh) already points to the correct bin/ directory for the active
+# install layout. The vendor directory is simply its parent.
 TOOLS_VENDOR_DIR=""
-if [ -d "$LIB_DIR/../vendor" ]; then
-    TOOLS_VENDOR_DIR=$(cd "$LIB_DIR/../vendor" && pwd)
-elif [ -d "$LIB_DIR/../../../vendor" ]; then
-    TOOLS_VENDOR_DIR=$(cd "$LIB_DIR/../../../vendor" && pwd)
+if [ -n "$VENDOR_BIN" ]; then
+    TOOLS_VENDOR_DIR=$(cd "${VENDOR_BIN}.." && pwd)
 fi
 
 # Generate a runtime neon that wires everything together with absolute paths.
