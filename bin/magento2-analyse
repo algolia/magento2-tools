@@ -70,10 +70,12 @@ parameters:
         - $MAGENTO_ROOT/vendor/autoload.php
 NEON
 
+# Run from the extension directory so that any relative paths in the extension's
+# own phpstan.neon resolve correctly, regardless of where the user invoked the script.
 # If the extension provides its own neon config (with paths), let PHPStan use those.
 # Otherwise fall back to scanning the entire extension directory.
 if [ -f "$EXTENSION_DIR/phpstan.neon" ] || [ -f "$EXTENSION_DIR/phpstan.neon.dist" ]; then
-    ${VENDOR_BIN}phpstan analyse --memory-limit=4G -c "$RUNTIME_NEON"
+    (cd "$EXTENSION_DIR" && ${VENDOR_BIN}phpstan analyse --memory-limit=4G -c "$RUNTIME_NEON")
 else
-    ${VENDOR_BIN}phpstan analyse --memory-limit=4G -c "$RUNTIME_NEON" "$EXTENSION_DIR"
+    (cd "$EXTENSION_DIR" && ${VENDOR_BIN}phpstan analyse --memory-limit=4G -c "$RUNTIME_NEON" "$EXTENSION_DIR")
 fi
