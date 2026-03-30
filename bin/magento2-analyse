@@ -30,16 +30,18 @@ fi
 
 printf "${GREEN}Magento root detected:${NC} %s\n\n" "$MAGENTO_ROOT"
 
-# Resolve the vendor directory containing phpstan extensions bundled with magento2-tools.
+# VENDOR_BIN (set by env.sh) already points to the correct bin/ directory for the active
+# install layout. The vendor directory is simply its parent.
 TOOLS_VENDOR_DIR=""
-if [ -d "$LIB_DIR/../vendor" ]; then
-    TOOLS_VENDOR_DIR=$(cd "$LIB_DIR/../vendor" && pwd)
-elif [ -d "$LIB_DIR/../../../vendor" ]; then
-    TOOLS_VENDOR_DIR=$(cd "$LIB_DIR/../../../vendor" && pwd)
+if [ -n "$VENDOR_BIN" ]; then
+    TOOLS_VENDOR_DIR=$(cd "${VENDOR_BIN}.." && pwd)
 fi
 
 # Generate a runtime neon that wires everything together with absolute paths.
-RUNTIME_NEON=$(mktemp /tmp/phpstan-magento2-tools.XXXXXX.neon)
+RUNTIME_NEON=$(mktemp /tmp/phpstan-magento2-tools.XXXXXX)
+mv "$RUNTIME_NEON" "$RUNTIME_NEON.neon"
+RUNTIME_NEON="$RUNTIME_NEON.neon"
+
 trap "rm -f $RUNTIME_NEON" EXIT
 
 # --- Build includes ---
@@ -71,10 +73,12 @@ parameters:
         - $MAGENTO_ROOT/vendor/autoload.php
 NEON
 
+# Run from the extension directory so that any relative paths in the extension's
+# own phpstan.neon resolve correctly, regardless of where the user invoked the script.
 # If the extension provides its own neon config (with paths), let PHPStan use those.
 # Otherwise fall back to scanning the entire extension directory.
 if [ -f "$EXTENSION_DIR/phpstan.neon" ] || [ -f "$EXTENSION_DIR/phpstan.neon.dist" ]; then
-    ${VENDOR_BIN}phpstan analyse --memory-limit=4G -c "$RUNTIME_NEON"
+    (cd "$EXTENSION_DIR" && ${VENDOR_BIN}phpstan analyse --memory-limit=4G -c "$RUNTIME_NEON")
 else
-    ${VENDOR_BIN}phpstan analyse --memory-limit=4G -c "$RUNTIME_NEON" "$EXTENSION_DIR"
+    (cd "$EXTENSION_DIR" && ${VENDOR_BIN}phpstan analyse --memory-limit=4G -c "$RUNTIME_NEON" "$EXTENSION_DIR")
 fi
