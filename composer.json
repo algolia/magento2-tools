@@ -30,6 +30,12 @@
         "sort-packages": true,
         "preferred-install": "dist"
     },
+    "scripts": {
+        "dev:patch": "if grep -qF 'Skip PHPStan internal' vendor/bitexpert/phpstan-magento/src/bitExpert/PHPStan/Magento/Autoload/ExtensionInterfaceAutoloader.php 2>/dev/null; then echo 'Patch already applied.'; else patch -p1 -d vendor/bitexpert/phpstan-magento < patches/bitexpert-phpstan-magento-skip-phpstan-namespace.patch; fi"
+    },
+    "scripts-descriptions": {
+        "dev:patch": "Apply bitexpert/phpstan-magento autoloader patch to local vendor for development testing (see Known Issue in README)."
+    },
     "bin": [
         "bin/magento2-analyse",
         "bin/magento2-lint",

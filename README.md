@@ -68,6 +68,19 @@ COMPOSER_HOME=$(composer global config --absolute home) && \
 
 If the patch reports "Reversed (or previously applied) patch detected" it has already been applied; answer `n` to skip. If it fails for any other reason, `bitexpert/phpstan-magento` has been updated and the patch needs revisiting.
 
+## Development
+
+When working on this repository directly (rather than as a globally-installed package), run `composer install` to populate `vendor/`, then apply the bitexpert patch via the bundled Composer script:
+
+```bash
+composer install
+composer dev:patch
+```
+
+`composer dev:patch` is idempotent: it greps for the patch marker first and prints `Patch already applied.` if the local vendor is up to date, otherwise it runs `patch(1)` against `vendor/bitexpert/phpstan-magento`. Re-run it any time `bitexpert/phpstan-magento` is reinstalled (e.g. after `composer update`).
+
+The script only runs when invoked manually on this repository - it is not registered against any Composer event and has no effect when this package is installed as a dependency.
+
 ## Release process
 
 - Clear your the local repository with: `git add . && git reset --hard`
