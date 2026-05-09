@@ -13,6 +13,7 @@
     "prefer-stable": true,
     "require": {
         "bitexpert/phpstan-magento": "^0.32",
+        "cweagans/composer-patches": "^1.7",
         "friendsofphp/php-cs-fixer": "^3.0",
         "phpcompatibility/php-compatibility": "^9.3",
         "phpstan/phpstan": "^1.0",
@@ -27,7 +28,17 @@
     ],
     "config": {
         "sort-packages": true,
-        "preferred-install": "dist"
+        "preferred-install": "dist",
+        "allow-plugins": {
+            "cweagans/composer-patches": true
+        }
+    },
+    "extra": {
+        "patches": {
+            "bitexpert/phpstan-magento": {
+                "Skip PHPStan namespace in Extension autoloaders (bitExpert/phpstan-magento#297)": "patches/bitexpert-phpstan-magento-skip-phpstan-namespace.patch"
+            }
+        }
     },
     "bin": [
         "bin/magento2-analyse",
