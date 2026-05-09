@@ -37,7 +37,28 @@ Here is the list of available commands:
 
 Under PHPStan's parallel-worker mode with a warm cache, `bitexpert/phpstan-magento`'s `Extension*Autoloader` classes can collide with `phpstan/phpstan-phpunit`'s `MockObjectTypeNodeResolverExtension`, producing either a hard crash or silent false-positive `return statement is missing` errors. Tracked upstream in [bitExpert/phpstan-magento#297](https://github.com/bitExpert/phpstan-magento/issues/297).
 
-Until upstream merges a fix, a small patch in [patches/bitexpert-phpstan-magento-skip-phpstan-namespace.patch](patches/bitexpert-phpstan-magento-skip-phpstan-namespace.patch) makes both autoloaders skip classes in the `PHPStan\` namespace. Apply it once after `composer global require` (and after any `composer global update`):
+Until upstream merges a fix, this package ships [patches/bitexpert-phpstan-magento-skip-phpstan-namespace.patch](patches/bitexpert-phpstan-magento-skip-phpstan-namespace.patch), which makes both autoloaders skip classes in the `PHPStan\` namespace. Two ways to apply it:
+
+### Option A: composer-patches opt-in (recommended)
+
+[`cweagans/composer-patches`](https://github.com/cweagans/composer-patches) is included as a dependency and will auto-apply the patch on every `composer global install`/`update`, but only if the consumer (your global Composer environment) opts in. One-time setup:
+
+```bash
+composer global config --no-plugins allow-plugins.cweagans/composer-patches true
+composer global config extra.patches --json '{"bitexpert/phpstan-magento":{"Skip PHPStan namespace in Extension autoloaders":"vendor/algolia/magento2-tools/patches/bitexpert-phpstan-magento-skip-phpstan-namespace.patch"}}'
+```
+
+Then the patch applies on the next install/update:
+
+```bash
+composer global require algolia/magento2-tools
+```
+
+You should see `Applying patches for bitexpert/phpstan-magento` in the install output. From then on, every `composer global update` will reapply the patch automatically.
+
+### Option B: one-off manual `patch` (fallback)
+
+If you'd rather not opt into `cweagans/composer-patches`, apply the patch manually after each install/update:
 
 ```bash
 COMPOSER_HOME=$(composer global config --absolute home) && \

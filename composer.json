@@ -12,7 +12,8 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "bitexpert/phpstan-magento": "^0.32",
+        "bitexpert/phpstan-magento": "0.32.0",
+        "cweagans/composer-patches": "^1.7",
         "friendsofphp/php-cs-fixer": "^3.0",
         "phpcompatibility/php-compatibility": "^9.3",
         "phpstan/phpstan": "^1.0",
