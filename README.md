@@ -33,6 +33,20 @@ Here is the list of available commands:
 
 - **`magento2-test`**: Runs all previous commands in `--dry-run` / read-only mode (coding style, PHP compatibility, and PHPStan analysis).
 
+## Known issue: PHPStan crash from `bitexpert/phpstan-magento` autoloaders
+
+Under PHPStan's parallel-worker mode with a warm cache, `bitexpert/phpstan-magento`'s `Extension*Autoloader` classes can collide with `phpstan/phpstan-phpunit`'s `MockObjectTypeNodeResolverExtension`, producing either a hard crash or silent false-positive `return statement is missing` errors. Tracked upstream in [bitExpert/phpstan-magento#297](https://github.com/bitExpert/phpstan-magento/issues/297).
+
+Until upstream merges a fix, a small patch in [patches/bitexpert-phpstan-magento-skip-phpstan-namespace.patch](patches/bitexpert-phpstan-magento-skip-phpstan-namespace.patch) makes both autoloaders skip classes in the `PHPStan\` namespace. Apply it once after `composer global require` (and after any `composer global update`):
+
+```bash
+COMPOSER_HOME=$(composer global config --absolute home) && \
+  patch -d "$COMPOSER_HOME/vendor/bitexpert/phpstan-magento" -p1 \
+    < "$COMPOSER_HOME/vendor/algolia/magento2-tools/patches/bitexpert-phpstan-magento-skip-phpstan-namespace.patch"
+```
+
+If the patch reports "Reversed (or previously applied) patch detected" it has already been applied; answer `n` to skip. If it fails for any other reason, `bitexpert/phpstan-magento` has been updated and the patch needs revisiting.
+
 ## Release process
 
 - Clear your the local repository with: `git add . && git reset --hard`
