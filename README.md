@@ -33,32 +33,13 @@ Here is the list of available commands:
 
 - **`magento2-test`**: Runs all previous commands in `--dry-run` / read-only mode (coding style, PHP compatibility, and PHPStan analysis).
 
-## Known issue: PHPStan crash from `bitexpert/phpstan-magento` autoloaders
+## Optional patch: `bitexpert/phpstan-magento` autoloader collision
 
-Under PHPStan's parallel-worker mode with a warm cache, `bitexpert/phpstan-magento`'s `Extension*Autoloader` classes can collide with `phpstan/phpstan-phpunit`'s `MockObjectTypeNodeResolverExtension`, producing either a hard crash or silent false-positive `return statement is missing` errors. Tracked upstream in [bitExpert/phpstan-magento#297](https://github.com/bitExpert/phpstan-magento/issues/297).
+Under specific conditions (PHPStan parallel-worker mode with a warm cache, certain symlinked install layouts), `bitexpert/phpstan-magento`'s `Extension*Autoloader` classes can collide with `phpstan/phpstan-phpunit`'s `MockObjectTypeNodeResolverExtension`. Symptoms include a hard `ExtensionInterfaceAutoloader.php line 93` crash or silent false-positive `return statement is missing` errors. Tracked upstream in [bitExpert/phpstan-magento#297](https://github.com/bitExpert/phpstan-magento/issues/297).
 
-Until upstream merges a fix, this package ships [patches/bitexpert-phpstan-magento-skip-phpstan-namespace.patch](patches/bitexpert-phpstan-magento-skip-phpstan-namespace.patch), which makes both autoloaders skip classes in the `PHPStan\` namespace. Two ways to apply it:
+`magento2-analyse` mitigates the most common trigger automatically, so most users will never see this. **Only apply the patch below if you actually encounter the crash or false positives.**
 
-### Option A: composer-patches opt-in (recommended)
-
-[`cweagans/composer-patches`](https://github.com/cweagans/composer-patches) is included as a dependency and will auto-apply the patch on every `composer global install`/`update`, but only if the consumer (your global Composer environment) opts in. One-time setup:
-
-```bash
-composer global config --no-plugins allow-plugins.cweagans/composer-patches true
-composer global config extra.patches --json '{"bitexpert/phpstan-magento":{"Skip PHPStan namespace in Extension autoloaders":"vendor/algolia/magento2-tools/patches/bitexpert-phpstan-magento-skip-phpstan-namespace.patch"}}'
-```
-
-Then the patch applies on the next install/update:
-
-```bash
-composer global require algolia/magento2-tools
-```
-
-You should see `Applying patches for bitexpert/phpstan-magento` in the install output. From then on, every `composer global update` will reapply the patch automatically.
-
-### Option B: one-off manual `patch` (fallback)
-
-If you'd rather not opt into `cweagans/composer-patches`, apply the patch manually after each install/update:
+This package ships [patches/bitexpert-phpstan-magento-skip-phpstan-namespace.patch](patches/bitexpert-phpstan-magento-skip-phpstan-namespace.patch), which makes both autoloaders skip classes in the `PHPStan\` namespace. Apply it manually against your global Composer install:
 
 ```bash
 COMPOSER_HOME=$(composer global config --absolute home) && \
@@ -66,7 +47,7 @@ COMPOSER_HOME=$(composer global config --absolute home) && \
     < "$COMPOSER_HOME/vendor/algolia/magento2-tools/patches/bitexpert-phpstan-magento-skip-phpstan-namespace.patch"
 ```
 
-If the patch reports "Reversed (or previously applied) patch detected" it has already been applied; answer `n` to skip. If it fails for any other reason, `bitexpert/phpstan-magento` has been updated and the patch needs revisiting.
+If the patch reports "Reversed (or previously applied) patch detected" it has already been applied; answer `n` to skip. The patch needs to be reapplied after every `composer global update` of `algolia/magento2-tools`. If `patch` fails for any other reason, `bitexpert/phpstan-magento` has been updated and the patch needs revisiting.
 
 ## Development
 

@@ -17,7 +17,13 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
-# Resolve extension dir to absolute path
+# Resolve extension dir to absolute path. Run Magento detection against the
+# logical path first (it relies on a /vendor/ segment), then resolve symlinks
+# for PHPStan. When an extension is installed via a composer path repository,
+# vendor/<vendor>/<pkg> is a symlink to the source dir. Passing the symlinked
+# path to PHPStan causes it to see two physical locations for the same class
+# (the analyzed path and the autoloader-resolved real path), corrupting
+# reflection and producing spurious "return statement is missing" errors.
 EXTENSION_DIR=$(cd "$EXTENSION_DIR" && pwd)
 
 # Detect Magento root — required for meaningful PHPStan analysis
@@ -27,6 +33,8 @@ if ! detect_magento_root "$EXTENSION_DIR"; then
     printf "Ensure the extension is installed within a Magento project (e.g. via Composer).\n"
     exit 1
 fi
+
+EXTENSION_DIR=$(cd "$EXTENSION_DIR" && pwd -P)
 
 printf "${GREEN}Magento root detected:${NC} %s\n\n" "$MAGENTO_ROOT"
 
