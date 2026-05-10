@@ -2,6 +2,11 @@ Skip PHPStan internal classes in Extension* autoloaders to avoid false positives
 and crashes when phpstan-phpunit registers classes whose names match bitexpert's
 *Extension / *ExtensionInterface suffix patterns.
 
+Authored against bitexpert/phpstan-magento 0.32.0. The hunks reference line
+numbers from that release; if a future 0.32.x or 0.33.x shifts context, the
+patch may need to be regenerated. See magento2-tools composer.json for the
+constraint and bump it together with this patch when re-validating.
+
 See https://github.com/bitExpert/phpstan-magento/issues/297
 
 --- a/src/bitExpert/PHPStan/Magento/Autoload/ExtensionInterfaceAutoloader.php
