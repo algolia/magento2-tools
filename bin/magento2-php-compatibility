@@ -2,10 +2,13 @@
 
 set -e
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+# shellcheck source=../lib/parse-args.sh
+source "$SCRIPT_DIR/../lib/parse-args.sh"
+
 EXTENSION_DIR=${1?Error: no extension dir given}
 VENDOR_BIN=${2}
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # shellcheck source=../lib/env.sh
 source "$SCRIPT_DIR/../lib/env.sh"
 
@@ -15,6 +18,12 @@ if [ ! -d "$PHP_COMPATIBILITY_PATH" ]; then
   PHP_COMPATIBILITY_PATH=$BIN_DIR/../phpcompatibility/php-compatibility
 fi
 
-${VENDOR_BIN}phpcs --config-set installed_paths $PHP_COMPATIBILITY_PATH
-
-${VENDOR_BIN}phpcs -p --standard=PHPCompatibility --runtime-set testVersion 7.4- --runtime-set ignore_warnings_on_exit true --ignore=vendor/*,*/view "$EXTENSION_DIR"
+if [ "$JSON_MODE" = "1" ]; then
+    # `--config-set` prints "Using config file: ..." to stdout; keep it off the
+    # JSON stream. Drop `-p` (progress dots) and select the JSON reporter.
+    ${VENDOR_BIN}phpcs --config-set installed_paths $PHP_COMPATIBILITY_PATH 1>&2
+    ${VENDOR_BIN}phpcs --report=json --standard=PHPCompatibility --runtime-set testVersion 7.4- --runtime-set ignore_warnings_on_exit true --ignore=vendor/*,*/view "$EXTENSION_DIR"
+else
+    ${VENDOR_BIN}phpcs --config-set installed_paths $PHP_COMPATIBILITY_PATH
+    ${VENDOR_BIN}phpcs -p --standard=PHPCompatibility --runtime-set testVersion 7.4- --runtime-set ignore_warnings_on_exit true --ignore=vendor/*,*/view "$EXTENSION_DIR"
+fi

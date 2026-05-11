@@ -2,10 +2,13 @@
 
 set -e
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+# shellcheck source=../lib/parse-args.sh
+source "$SCRIPT_DIR/../lib/parse-args.sh"
+
 EXTENSION_DIR=${1?Error: no extension dir given}
 VENDOR_BIN=${2}
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # shellcheck source=../lib/env.sh
 source "$SCRIPT_DIR/../lib/env.sh"
 # shellcheck source=../lib/detect-magento.sh
@@ -28,15 +31,19 @@ EXTENSION_DIR=$(cd "$EXTENSION_DIR" && pwd)
 
 # Detect Magento root — required for meaningful PHPStan analysis
 if ! detect_magento_root "$EXTENSION_DIR"; then
-    printf "${RED}Error:${NC} Could not detect a Magento root installation.\n"
-    printf "PHPStan requires the full Magento dependency chain to produce useful results.\n"
-    printf "Ensure the extension is installed within a Magento project (e.g. via Composer).\n"
+    printf "${RED}Error:${NC} Could not detect a Magento root installation.\n" 1>&2
+    printf "PHPStan requires the full Magento dependency chain to produce useful results.\n" 1>&2
+    printf "Ensure the extension is installed within a Magento project (e.g. via Composer).\n" 1>&2
     exit 1
 fi
 
 EXTENSION_DIR=$(cd "$EXTENSION_DIR" && pwd -P)
 
-printf "${GREEN}Magento root detected:${NC} %s\n\n" "$MAGENTO_ROOT"
+if [ "$JSON_MODE" = "1" ]; then
+    printf "${GREEN}Magento root detected:${NC} %s\n\n" "$MAGENTO_ROOT" 1>&2
+else
+    printf "${GREEN}Magento root detected:${NC} %s\n\n" "$MAGENTO_ROOT"
+fi
 
 # VENDOR_BIN (set by env.sh) already points to the correct bin/ directory for the active
 # install layout. The vendor directory is simply its parent.
@@ -81,12 +88,19 @@ parameters:
         - $MAGENTO_ROOT/vendor/autoload.php
 NEON
 
+# In JSON mode, swap PHPStan's output to its machine-readable formatter and silence
+# the progress bar (it writes ANSI control codes to stdout and would corrupt JSON).
+PHPSTAN_FMT_ARGS=()
+if [ "$JSON_MODE" = "1" ]; then
+    PHPSTAN_FMT_ARGS=(--error-format=json --no-progress)
+fi
+
 # Run from the extension directory so that any relative paths in the extension's
 # own phpstan.neon resolve correctly, regardless of where the user invoked the script.
 # If the extension provides its own neon config (with paths), let PHPStan use those.
 # Otherwise fall back to scanning the entire extension directory.
 if [ -f "$EXTENSION_DIR/phpstan.neon" ] || [ -f "$EXTENSION_DIR/phpstan.neon.dist" ]; then
-    (cd "$EXTENSION_DIR" && ${VENDOR_BIN}phpstan analyse --memory-limit=4G -c "$RUNTIME_NEON")
+    (cd "$EXTENSION_DIR" && ${VENDOR_BIN}phpstan analyse --memory-limit=4G -c "$RUNTIME_NEON" "${PHPSTAN_FMT_ARGS[@]}")
 else
-    (cd "$EXTENSION_DIR" && ${VENDOR_BIN}phpstan analyse --memory-limit=4G -c "$RUNTIME_NEON" "$EXTENSION_DIR")
+    (cd "$EXTENSION_DIR" && ${VENDOR_BIN}phpstan analyse --memory-limit=4G -c "$RUNTIME_NEON" "${PHPSTAN_FMT_ARGS[@]}" "$EXTENSION_DIR")
 fi
