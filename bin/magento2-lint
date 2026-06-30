@@ -2,11 +2,19 @@
 
 set -e
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+# shellcheck source=../lib/parse-args.sh
+source "$SCRIPT_DIR/../lib/parse-args.sh"
+
 EXTENSION_DIR=${1?Error: no extension dir given}
 VENDOR_BIN=${2}
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # shellcheck source=../lib/env.sh
 source "$SCRIPT_DIR/../lib/env.sh"
 
-${VENDOR_BIN}php-cs-fixer fix --allow-risky=yes "$EXTENSION_DIR"
+PHPCS_FIXER_FMT_ARGS=()
+if [ "$JSON_MODE" = "1" ]; then
+    PHPCS_FIXER_FMT_ARGS=(--format=json)
+fi
+
+${VENDOR_BIN}php-cs-fixer fix --allow-risky=yes "${PHPCS_FIXER_FMT_ARGS[@]}" "$EXTENSION_DIR"
