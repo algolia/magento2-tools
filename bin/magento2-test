@@ -2,27 +2,82 @@
 
 set -e
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+# shellcheck source=../lib/parse-args.sh
+source "$SCRIPT_DIR/../lib/parse-args.sh"
+
 EXTENSION_DIR=${1?Error: no extension dir given}
 VENDOR_BIN=${2}
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # shellcheck source=../lib/env.sh
 source "$SCRIPT_DIR/../lib/env.sh"
 
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
-printf "\n1. Analysing ${GREEN}Coding Style${NC} \n\n"
-
-${VENDOR_BIN}php-cs-fixer fix --allow-risky=yes "$EXTENSION_DIR" --dry-run
-
-printf "\n2. Analysing ${GREEN}PHP Compatibility${NC} \n\n"
-
 PHP_COMPATIBILITY_PATH=$BIN_DIR/../../../vendor/phpcompatibility/php-compatibility
 
 if [ ! -d "$PHP_COMPATIBILITY_PATH" ]; then
   PHP_COMPATIBILITY_PATH=$BIN_DIR/../../../phpcompatibility/php-compatibility
 fi
+
+if [ "$JSON_MODE" = "1" ]; then
+    # Aggregated JSON mode: run all three checks regardless of individual failures,
+    # capture each tool's stdout, then emit a single JSON document.
+    set +e
+
+    coding_style_out=$(${VENDOR_BIN}php-cs-fixer fix --allow-risky=yes --dry-run --format=json "$EXTENSION_DIR")
+    coding_style_exit=$?
+
+    ${VENDOR_BIN}phpcs --config-set installed_paths "$PHP_COMPATIBILITY_PATH" 1>&2
+    php_compat_out=$(${VENDOR_BIN}phpcs --report=json --standard=PHPCompatibility --runtime-set testVersion 7.4- --runtime-set ignore_warnings_on_exit true --ignore=vendor/*,*/view "$EXTENSION_DIR")
+    php_compat_exit=$?
+
+    static_analysis_out=$("$BIN_DIR/magento2-analyse" --json "$EXTENSION_DIR" "$VENDOR_BIN")
+    static_analysis_exit=$?
+
+    # Fall back to a stub error object if a tool produced no parseable JSON
+    # (e.g. died before reaching its reporter).
+    is_json() {
+        [ -n "$1" ] || return 1
+        local first=${1:0:1}
+        [ "$first" = "{" ] || [ "$first" = "[" ]
+    }
+
+    if ! is_json "$coding_style_out"; then
+        coding_style_out="{\"error\":\"no JSON emitted\",\"exit_code\":$coding_style_exit}"
+    fi
+    if ! is_json "$php_compat_out"; then
+        php_compat_out="{\"error\":\"no JSON emitted\",\"exit_code\":$php_compat_exit}"
+    fi
+    if ! is_json "$static_analysis_out"; then
+        static_analysis_out="{\"error\":\"no JSON emitted\",\"exit_code\":$static_analysis_exit}"
+    fi
+
+    cat <<EOF
+{
+  "coding_style": $coding_style_out,
+  "php_compatibility": $php_compat_out,
+  "static_analysis": $static_analysis_out,
+  "exit_codes": {
+    "coding_style": $coding_style_exit,
+    "php_compatibility": $php_compat_exit,
+    "static_analysis": $static_analysis_exit
+  }
+}
+EOF
+
+    overall=$coding_style_exit
+    [ "$php_compat_exit" -gt "$overall" ] && overall=$php_compat_exit
+    [ "$static_analysis_exit" -gt "$overall" ] && overall=$static_analysis_exit
+    exit $overall
+fi
+
+printf "\n1. Analysing ${GREEN}Coding Style${NC} \n\n"
+
+${VENDOR_BIN}php-cs-fixer fix --allow-risky=yes "$EXTENSION_DIR" --dry-run
+
+printf "\n2. Analysing ${GREEN}PHP Compatibility${NC} \n\n"
 
 ${VENDOR_BIN}phpcs --config-set installed_paths $PHP_COMPATIBILITY_PATH
 

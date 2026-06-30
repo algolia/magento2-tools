@@ -33,6 +33,35 @@ Here is the list of available commands:
 
 - **`magento2-test`**: Runs all previous commands in `--dry-run` / read-only mode (coding style, PHP compatibility, and PHPStan analysis).
 
+## Optional patch: `bitexpert/phpstan-magento` autoloader collision
+
+Under specific conditions (PHPStan parallel-worker mode with a warm cache, certain symlinked install layouts), `bitexpert/phpstan-magento`'s `Extension*Autoloader` classes can collide with `phpstan/phpstan-phpunit`'s `MockObjectTypeNodeResolverExtension`. Symptoms include a hard `ExtensionInterfaceAutoloader.php line 93` crash or silent false-positive `return statement is missing` errors. Tracked upstream in [bitExpert/phpstan-magento#297](https://github.com/bitExpert/phpstan-magento/issues/297).
+
+`magento2-analyse` mitigates the most common trigger automatically, so most users will never see this. **Only apply the patch below if you actually encounter the crash or false positives.**
+
+This package ships [patches/bitexpert-phpstan-magento-skip-phpstan-namespace.patch](patches/bitexpert-phpstan-magento-skip-phpstan-namespace.patch), which makes both autoloaders skip classes in the `PHPStan\` namespace. Apply it manually against your global Composer install:
+
+```bash
+COMPOSER_HOME=$(composer global config --absolute home) && \
+  patch -d "$COMPOSER_HOME/vendor/bitexpert/phpstan-magento" -p1 \
+    < "$COMPOSER_HOME/vendor/algolia/magento2-tools/patches/bitexpert-phpstan-magento-skip-phpstan-namespace.patch"
+```
+
+If the patch reports "Reversed (or previously applied) patch detected" it has already been applied; answer `n` to skip. The patch needs to be reapplied after every `composer global update` of `algolia/magento2-tools`. If `patch` fails for any other reason, `bitexpert/phpstan-magento` has been updated and the patch needs revisiting.
+
+## Development
+
+When working on this repository directly (rather than as a globally-installed package), run `composer install` to populate `vendor/`, then apply the bitexpert patch via the bundled Composer script:
+
+```bash
+composer install
+composer dev:patch
+```
+
+`composer dev:patch` is idempotent: it greps for the patch marker first and prints `Patch already applied.` if the local vendor is up to date, otherwise it runs `patch(1)` against `vendor/bitexpert/phpstan-magento`. Re-run it any time `bitexpert/phpstan-magento` is reinstalled (e.g. after `composer update`).
+
+The script only runs when invoked manually on this repository - it is not registered against any Composer event and has no effect when this package is installed as a dependency.
+
 ## Release process
 
 - Clear your the local repository with: `git add . && git reset --hard`

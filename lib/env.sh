@@ -33,6 +33,10 @@ fi
 # Guard against running the update check twice when scripts delegate to each other
 # (e.g. magento2-test calling magento2-analyse).
 if [ -z "$MAGENTO2_TOOLS_ENV_LOADED" ]; then
-    "$BIN_DIR/magento2-update"
+    if [ "$JSON_MODE" = "1" ]; then
+        "$BIN_DIR/magento2-update" 1>&2
+    else
+        "$BIN_DIR/magento2-update"
+    fi
     export MAGENTO2_TOOLS_ENV_LOADED=1
 fi
